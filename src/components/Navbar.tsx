@@ -27,8 +27,8 @@ export function Navbar() {
                 <Link to="/" className="hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</Link>
                 {isAuthenticated && (
                   <>
-                    <Link to="/temas" className="hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-sm font-medium transition-colors">Planos</Link>
-                    <Link to="/produtos" className="hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-sm font-medium transition-colors">Seguros</Link>
+                    <Link to="/Seguros" className="hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-sm font-medium transition-colors">Seguros</Link>
+                    <Link to="/Carros" className="hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-sm font-medium transition-colors">Carros</Link>
                   </>
                 )}
               </div>

@@ -1,5 +1,7 @@
+
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
+import { login as apiLogin, getClientes } from "../services/Service";
 
 interface User {
   id: string;
@@ -10,7 +12,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, senha: string) => Promise<boolean>;
-  register: (nome: string, email: string, senha: string) => Promise<boolean>;
+  // register removido pois não há endpoint de cadastro na API
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -21,68 +23,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Verifica se há usuário logado no localStorage
-    const savedUser = localStorage.getItem("autoguard_current_user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    // Verifica se há token salvo e busca o usuário autenticado
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+    if (token && userId) {
+      getClientes()
+        .then((res) => {
+          const cliente = res.data.find((c: any) => String(c.id) === String(userId));
+          setUser(cliente || null);
+        })
+        .catch(() => setUser(null));
     }
   }, []);
 
-  const register = async (nome: string, email: string, senha: string): Promise<boolean> => {
-    try {
-      // Busca usuários existentes
-      const usersData = localStorage.getItem("autoguard_users");
-      const users = usersData ? JSON.parse(usersData) : [];
 
-      // Verifica se o email já está cadastrado
-      const emailExists = users.some((u: any) => u.email === email);
-      if (emailExists) {
-        return false;
-      }
-
-      // Cria novo usuário
-      const newUser = {
-        id: Date.now().toString(),
-        nome,
-        email,
-        senha, // Em produção, a senha deveria ser criptografada
-      };
-
-      users.push(newUser);
-      localStorage.setItem("autoguard_users", JSON.stringify(users));
-
-      // Loga o usuário automaticamente após cadastro
-      const userWithoutPassword = { id: newUser.id, nome: newUser.nome, email: newUser.email };
-      setUser(userWithoutPassword);
-      localStorage.setItem("autoguard_current_user", JSON.stringify(userWithoutPassword));
-
-      return true;
-    } catch (error) {
-      console.error("Erro ao registrar usuário:", error);
-      return false;
-    }
-  };
 
   const login = async (email: string, senha: string): Promise<boolean> => {
     try {
-      const usersData = localStorage.getItem("autoguard_users");
-      const users = usersData ? JSON.parse(usersData) : [];
+      const response = await apiLogin(email, senha);
+      const token = response.data.token;
+      localStorage.setItem("token", token);
 
-      // Busca usuário com email e senha correspondentes
-      const foundUser = users.find((u: any) => u.email === email && u.senha === senha);
+      // Decodifica o JWT para pegar o email (sub)
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join('')
+      );
+      const payload = JSON.parse(jsonPayload);
+      const userEmail = payload.sub;
 
-      if (foundUser) {
-        const userWithoutPassword = {
-          id: foundUser.id,
-          nome: foundUser.nome,
-          email: foundUser.email,
-        };
-        setUser(userWithoutPassword);
-        localStorage.setItem("autoguard_current_user", JSON.stringify(userWithoutPassword));
+      // Busca todos os clientes e filtra pelo email
+      const clientesRes = await getClientes();
+      const cliente = clientesRes.data.find((c: any) => c.email === userEmail);
+      if (cliente) {
+        setUser(cliente);
+        localStorage.setItem("userId", cliente.id);
         return true;
+      } else {
+        setUser(null);
+        localStorage.removeItem("userId");
+        return false;
       }
-
-      return false;
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       return false;
@@ -91,7 +78,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("autoguard_current_user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
   };
 
   return (
@@ -99,7 +87,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         login,
-        register,
         logout,
         isAuthenticated: !!user,
       }}
