@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { cpf } from "cpf-cnpj-validator";
 import { register } from "../../../services/Service";
 export function CadastroCliente() {
   const [form, setForm] = useState({ nome: "", email: "", senha: "", cpf: "", telefone: "" });
@@ -11,6 +12,10 @@ export function CadastroCliente() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!cpf.isValid(form.cpf)) {
+      setError("CPF inválido");
+      return;
+    }
     try {
       console.log({
         nome: form.nome,

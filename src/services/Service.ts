@@ -1,7 +1,11 @@
 import axios from "axios";
 
+const URL_BACKEND = "https://seguro-de-carros-backend.onrender.com"
+// local -> http://localhost:4000
+// produção -> https://seguro-de-carros-backend.onrender.com
+
 const api = axios.create({
-	baseURL: "https://seguro-de-carros-backend.onrender.com", // Adicione a URL do seu backend Render aqui
+	baseURL: URL_BACKEND
 });
 
 // Adiciona o token JWT automaticamente se existir

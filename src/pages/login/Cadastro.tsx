@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { cpf as cpfValidator } from "cpf-cnpj-validator";
 import { register } from "../../services/Service";
 import { Car, Eye, EyeOff } from "lucide-react";
 
@@ -44,6 +45,11 @@ export function Cadastro() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError("Por favor, insira um email válido");
+      return;
+    }
+
+    if (!cpfValidator.isValid(cpf)) {
+      setError("CPF inválido");
       return;
     }
 
@@ -140,63 +146,63 @@ export function Cadastro() {
             </div>
 
 
-                      {/* Campos de senha agrupados no final */}
-                      <div>
-                        <label htmlFor="senha" className="block text-sm font-medium text-[#e6e6e6] mb-2">
-                          Senha
-                        </label>
-                        <div className="relative">
-                          <input
-                            id="senha"
-                            name="senha"
-                            type={showPassword ? "text" : "password"}
-                            required
-                            className="appearance-none relative block w-full px-3 py-2 border border-[#4c4b4b] bg-[#1a1a1a] text-white placeholder-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-[#e24f10] focus:border-transparent pr-10"
-                            placeholder="••••••••"
-                            value={senha}
-                            onChange={(e) => setSenha(e.target.value)}
-                          />
-                          <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-5 w-5 text-gray-400 hover:text-[#e6e6e6]" />
-                            ) : (
-                              <Eye className="h-5 w-5 text-gray-400 hover:text-[#e6e6e6]" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                      <div>
-                        <label htmlFor="confirmarSenha" className="block text-sm font-medium text-[#e6e6e6] mb-2">
-                          Confirmar senha
-                        </label>
-                        <div className="relative">
-                          <input
-                            id="confirmarSenha"
-                            name="confirmarSenha"
-                            type={showConfirmPassword ? "text" : "password"}
-                            required
-                            className="appearance-none relative block w-full px-3 py-2 border border-[#4c4b4b] bg-[#1a1a1a] text-white placeholder-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-[#e24f10] focus:border-transparent pr-10"
-                            placeholder="••••••••"
-                            value={confirmarSenha}
-                            onChange={(e) => setConfirmarSenha(e.target.value)}
-                          />
-                          <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          >
-                            {showConfirmPassword ? (
-                              <EyeOff className="h-5 w-5 text-gray-400 hover:text-[#e6e6e6]" />
-                            ) : (
-                              <Eye className="h-5 w-5 text-gray-400 hover:text-[#e6e6e6]" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
+            {/* Campos de senha agrupados no final */}
+            <div>
+              <label htmlFor="senha" className="block text-sm font-medium text-[#e6e6e6] mb-2">
+                Senha
+              </label>
+              <div className="relative">
+                <input
+                  id="senha"
+                  name="senha"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  className="appearance-none relative block w-full px-3 py-2 border border-[#4c4b4b] bg-[#1a1a1a] text-white placeholder-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-[#e24f10] focus:border-transparent pr-10"
+                  placeholder="••••••••"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-[#e6e6e6]" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-gray-400 hover:text-[#e6e6e6]" />
+                  )}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label htmlFor="confirmarSenha" className="block text-sm font-medium text-[#e6e6e6] mb-2">
+                Confirmar senha
+              </label>
+              <div className="relative">
+                <input
+                  id="confirmarSenha"
+                  name="confirmarSenha"
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  className="appearance-none relative block w-full px-3 py-2 border border-[#4c4b4b] bg-[#1a1a1a] text-white placeholder-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-[#e24f10] focus:border-transparent pr-10"
+                  placeholder="••••••••"
+                  value={confirmarSenha}
+                  onChange={(e) => setConfirmarSenha(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-[#e6e6e6]" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-gray-400 hover:text-[#e6e6e6]" />
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
 
           {error && (
