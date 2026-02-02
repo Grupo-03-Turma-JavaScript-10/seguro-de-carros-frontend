@@ -57,7 +57,8 @@ export function Cadastro() {
 
   return (
     <div className="min-h-[calc(100vh-128px)] bg-black flex items-center justify-center px-4 py-12">
-      <div className="max-w-md w-full space-y-8">
+      <div className="max-w-md w-full">
+        <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-8 space-y-8">
         <div>
           <div className="flex justify-center mb-6">
             <Car className="h-16 w-16 text-[#e24f10]" />
@@ -223,6 +224,7 @@ export function Cadastro() {
             </p>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );
