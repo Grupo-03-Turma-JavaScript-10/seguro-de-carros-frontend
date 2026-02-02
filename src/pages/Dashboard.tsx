@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getApolices, getMeusVeiculos } from '../services/Service';
-import { Car, AlertCircle, TrendingUp, Shield } from 'lucide-react';
+import { Car, AlertCircle, TrendingUp, Shield, Download } from 'lucide-react';
 
 interface ApoliceComStatus {
   id: number;
@@ -105,6 +105,28 @@ export function Dashboard() {
     return 'text-green-500 bg-green-500/10';
   };
 
+  const exportarCSV = () => {
+    if (apolices.length === 0) return;
+    const headers = ['Número', 'Tipo', 'Valor', 'Veículo', 'Início', 'Fim', 'Status'];
+    const linhas = apolices.map(a => [
+      a.numeroApolice,
+      a.tipoSeguro,
+      a.valor,
+      `${a.veiculo?.marca || ''} ${a.veiculo?.modelo || ''}`.trim(),
+      a.dataInicio,
+      a.dataFim,
+      a.status
+    ].join(','));
+    const csv = [headers.join(','), ...linhas].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'apolices.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const getStatusLabel = (status: string, diasRestantes: number) => {
     if (status === 'vencida') return 'Vencida';
     if (status === 'vencendo') return `Vence em ${diasRestantes}d`;
@@ -123,9 +145,18 @@ export function Dashboard() {
     <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
-          <p className="text-gray-400">Bem-vindo de volta, {user?.nome || 'usuário'}!</p>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
+            <p className="text-gray-400">Bem-vindo de volta, {user?.nome || 'usuário'}!</p>
+          </div>
+          <button
+            onClick={exportarCSV}
+            disabled={apolices.length === 0}
+            className="bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded-full font-bold flex items-center gap-2 transition-all disabled:opacity-50"
+          >
+            <Download className="w-5 h-5" /> Exportar CSV
+          </button>
         </div>
 
         {/* Stats Cards */}
