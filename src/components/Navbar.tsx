@@ -14,7 +14,7 @@ export function Navbar() {
   };
 
   return (
-    <nav className="bg-black border-b border-[#4c4b4b] text-[#e6e6e6]">
+    <nav className="sticky top-0 z-50 bg-black border-b border-[#4c4b4b] text-[#e6e6e6]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -27,8 +27,9 @@ export function Navbar() {
                 <Link to="/" className="hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</Link>
                 {isAuthenticated && (
                   <>
+                    <Link to="/dashboard" className="hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</Link>
                     <Link to="/Seguros" className="hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-sm font-medium transition-colors">Seguros</Link>
-                    <Link to="/Carros" className="hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-sm font-medium transition-colors">Carros</Link>
+                    <Link to="/carros" className="hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-sm font-medium transition-colors">Carros</Link>
                   </>
                 )}
               </div>
@@ -100,8 +101,9 @@ export function Navbar() {
             <Link to="/" onClick={() => setIsOpen(false)} className="block hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-base font-medium text-white">Home</Link>
             {isAuthenticated ? (
               <>
-                <Link to="/temas" onClick={() => setIsOpen(false)} className="block hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-base font-medium text-gray-300">Planos</Link>
-                <Link to="/produtos" onClick={() => setIsOpen(false)} className="block hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-base font-medium text-gray-300">Seguros</Link>
+                <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-base font-medium text-gray-300">Dashboard</Link>
+                <Link to="/seguros" onClick={() => setIsOpen(false)} className="block hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-base font-medium text-gray-300">Seguros</Link>
+                <Link to="/carros" onClick={() => setIsOpen(false)} className="block hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-base font-medium text-gray-300">Carros</Link>
                 
                 <div className="border-t border-[#4c4b4b] mt-2 pt-2">
                   <div className="px-3 py-2">

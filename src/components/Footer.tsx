@@ -14,9 +14,9 @@ export function Footer() {
         <div>
           <h3 className="text-lg font-semibold text-white mb-4">Contato</h3>
           <ul className="space-y-2 text-sm text-gray-400">
-            <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-[#e24f10]" /> (11) 9999-9999</li>
-            <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-[#e24f10]" /> contato@autoguard.com</li>
-            <li className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[#e24f10]" /> Av. Paulista, 1000 - SP</li>
+            <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-[#e24f10]" /> (51) 8249-2416</li>
+            <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-[#e24f10]" /> g3js10@gmail.com</li>
+            <li className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[#e24f10]" /> Porto-Alegre-RS</li>
           </ul>
         </div>
 

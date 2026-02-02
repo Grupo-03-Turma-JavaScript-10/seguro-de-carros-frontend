@@ -1,11 +1,23 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ShieldCheck, Zap, DollarSign, ArrowRight } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 import { motion } from "framer-motion";
 import { ImageWithFallback } from "../App/components/figma/imageWithFallback";
 
-export function Home() {
-  return (
-    <div className="flex flex-col w-full">
+  function Home() {
+    const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+  
+    const handleVerSeguros = () => {
+      if (isAuthenticated) {
+        navigate("/seguros");
+      } else {
+        navigate("/login");
+      }
+    };
+  
+    return (
+      <div className="flex flex-col w-full">
       {/* Hero Section */}
       <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -40,10 +52,13 @@ export function Home() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <Link to="/produtos" className="bg-[#e24f10] hover:bg-[#c23f0c] text-white px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105 flex items-center justify-center gap-2">
+            <button
+              onClick={handleVerSeguros}
+              className="bg-[#e24f10] hover:bg-[#c23f0c] text-white px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105 flex items-center justify-center gap-2"
+            >
               Ver Seguros <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link to="/temas" className="bg-transparent border-2 border-white hover:bg-white hover:text-black text-white px-8 py-4 rounded-full font-bold text-lg transition-all flex items-center justify-center">
+            </button>
+            <Link to="/planos" className="bg-transparent border-2 border-white hover:bg-white hover:text-black text-white px-8 py-4 rounded-full font-bold text-lg transition-all flex items-center justify-center">
               Nossos Planos
             </Link>
           </motion.div>
@@ -115,7 +130,7 @@ export function Home() {
                 Carro reserva garantido
               </li>
             </ul>
-            <Link to="/temas" className="text-[#e24f10] font-bold hover:text-white transition-colors inline-flex items-center gap-2">
+            <Link to="/planos" className="text-[#e24f10] font-bold hover:text-white transition-colors inline-flex items-center gap-2">
               CONHEÇA OS PLANOS <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -124,3 +139,5 @@ export function Home() {
     </div>
   );
 }
+
+export default Home;
