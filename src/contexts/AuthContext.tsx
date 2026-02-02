@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const token = response.data.token;
       localStorage.setItem("token", token);
 
-      // Decodifica o JWT para pegar o email (sub)
+      // Decodifica o JWT para pegar o token
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const jsonPayload = decodeURIComponent(
@@ -58,8 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           })
           .join('')
       );
+      // Token decodificado (apenas para debug se necessário)
       const payload = JSON.parse(jsonPayload);
-      const userEmail = payload.sub;
 
       // Busca o usuário autenticado via endpoint /me
       const meRes = await getMe();

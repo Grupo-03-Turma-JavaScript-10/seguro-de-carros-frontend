@@ -130,7 +130,7 @@ import { ImageWithFallback } from "../App/components/figma/imageWithFallback";
                 Carro reserva garantido
               </li>
             </ul>
-            <Link to="/temas" className="text-[#e24f10] font-bold hover:text-white transition-colors inline-flex items-center gap-2">
+            <Link to="/planos" className="text-[#e24f10] font-bold hover:text-white transition-colors inline-flex items-center gap-2">
               CONHEÇA OS PLANOS <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
