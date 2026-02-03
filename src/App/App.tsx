@@ -12,6 +12,7 @@ import { VeiculoForm } from '../pages/Veiculos/VeiculoForm';
 import { VeiculoDelet } from '../pages/Veiculos/VeiculoDelet';
 import { Planos } from '../pages/Planos/Planos';
 import { Dashboard } from '../pages/Dashboard';
+import { Sobre } from '../pages/Sobre';
 export default function App() {
   return (
       <BrowserRouter>
@@ -58,6 +59,7 @@ export default function App() {
                   <VeiculoDelet />
                 </ProtectedRoute>
               } />
+              <Route path="/sobre" element={<Sobre />} />
             </Route>
           </Routes>
         </AuthProvider>
