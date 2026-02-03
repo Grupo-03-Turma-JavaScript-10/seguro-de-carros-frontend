@@ -25,6 +25,7 @@ export function Navbar() {
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 <Link to="/" className="hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</Link>
+                <Link to="/sobre" className="hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-sm font-medium transition-colors">Sobre</Link>
                 {isAuthenticated && (
                   <>
                     <Link to="/Seguros" className="hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-sm font-medium transition-colors">Seguros</Link>
@@ -98,6 +99,7 @@ export function Navbar() {
         <div className="md:hidden bg-[#0a0a0a]">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <Link to="/" onClick={() => setIsOpen(false)} className="block hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-base font-medium text-white">Home</Link>
+            <Link to="/sobre" onClick={() => setIsOpen(false)} className="block hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-base font-medium text-white">Sobre</Link>
             {isAuthenticated ? (
               <>
                 <Link to="/temas" onClick={() => setIsOpen(false)} className="block hover:bg-[#1a1a1a] hover:text-[#e24f10] px-3 py-2 rounded-md text-base font-medium text-gray-300">Planos</Link>
