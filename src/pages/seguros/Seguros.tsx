@@ -1,6 +1,100 @@
 import { useAuth } from "../../contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { getApolices, deleteApolice } from "../../services/Service";
+import { SeguroCard } from "./SeguroCard";
+import { PlanoCard } from "./PlanoCard";
+import { SelecionarVeiculo } from "./SelecionarVeiculo";
+import { toast } from "sonner";
+import { Download } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../App/components/ui/alert.dialog";
+
 export default function Seguros() {
   const { user, isAuthenticated } = useAuth();
+  const location = useLocation();
+  const [apolices, setApolices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [etapa, setEtapa] = useState<"lista" | "planos" | "veiculo">(
+    location.state?.etapa || "lista"
+  );
+  const [planoSelecionado, setPlanoSelecionado] = useState<{
+    tipo: "BASICO" | "COMPLETO" | "PREMIUM";
+    titulo: string;
+    preco: number;
+  } | null>(location.state?.planoSelecionado || null);
+  const [apoliceParaAlterar, setApoliceParaAlterar] = useState<any | null>(null);
+  const [apoliceParaDeletar, setApoliceParaDeletar] = useState<any | null>(null);
+  const [showDialogCancelar, setShowDialogCancelar] = useState(false);
+
+  async function loadApolices() {
+    if (!isAuthenticated) return;
+    setLoading(true);
+    try {
+      const res = await getApolices();
+      const minhasApolices = res.data.filter((apolice: any) => apolice.cliente?.id === Number(user?.id));
+      setApolices(minhasApolices);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadApolices();
+  }, [isAuthenticated, user]);
+
+  const searchTerm = search.trim().toLowerCase();
+  const apolicesFiltradas = apolices.filter((apolice) => {
+    if (!searchTerm) return true;
+    const veiculo = apolice.veiculo || {};
+    const alvo = [
+      apolice.numeroApolice,
+      apolice.tipoSeguro,
+      apolice.tipo,
+      veiculo.marca,
+      veiculo.modelo,
+      veiculo.placa,
+      veiculo.ano,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return alvo.includes(searchTerm);
+  });
+
+  const exportarCSV = () => {
+    if (apolices.length === 0) return;
+    const headers = ['Número', 'Tipo', 'Valor', 'Veículo', 'Placa', 'Ano', 'Início', 'Fim'];
+    const linhas = apolices.map(a => [
+      a.numeroApolice,
+      a.tipoSeguro,
+      a.valor,
+      `${a.veiculo?.marca || ''} ${a.veiculo?.modelo || ''}`.trim(),
+      a.veiculo?.placa || '',
+      a.veiculo?.ano || '',
+      a.dataInicio,
+      a.dataFim
+    ].join(','));
+    const csv = [headers.join(','), ...linhas].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'seguros.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   if (!isAuthenticated) {
     return (
@@ -12,32 +106,236 @@ export default function Seguros() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white py-10 px-4">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Minhas Apólices</h1>
-          <button className="bg-[#e24f10] hover:bg-[#c23f0c] text-white px-6 py-2 rounded-full font-bold transition-all">
-            Nova Apólice
-          </button>
-        </div>
-        <div className="grid gap-6">
-          {/* Aqui você faz um map nas apólices do usuário */}
-          <div className="bg-[#181818] rounded-xl p-6 border border-[#333] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+  function handleSelecionarPlano(tipo: "BASICO" | "COMPLETO" | "PREMIUM", titulo: string, preco: number) {
+    setPlanoSelecionado({ tipo, titulo, preco });
+    setEtapa("veiculo");
+  }
+
+  function handleAlterarPlano(apolice: any) {
+    setApoliceParaAlterar(apolice);
+    setEtapa("planos");
+  }
+
+  function handleCancelarApolice(id: number) {
+    const apolice = apolices.find(a => a.id === id);
+    setApoliceParaDeletar(apolice);
+    setShowDialogCancelar(true);
+  }
+
+  async function confirmarCancelamento() {
+    if (!apoliceParaDeletar) return;
+
+    try {
+      await deleteApolice(apoliceParaDeletar.id);
+      await loadApolices();
+      toast.success("Apólice cancelada com sucesso!", {
+        description: `A apólice #${apoliceParaDeletar.numeroApolice} foi cancelada.`,
+      });
+      setShowDialogCancelar(false);
+      setApoliceParaDeletar(null);
+    } catch (error: any) {
+      console.error(error);
+      toast.error("Erro ao cancelar apólice", {
+        description: error?.response?.data?.message || "Ocorreu um erro desconhecido",
+      });
+    }
+  }
+
+  // Exibe tela de seleção de veículo
+  if (etapa === "veiculo" && planoSelecionado) {
+    return (
+      <SelecionarVeiculo
+        planoSelecionado={planoSelecionado}
+        apoliceParaAlterar={apoliceParaAlterar}
+        onSuccess={() => {
+          setEtapa("lista");
+          setPlanoSelecionado(null);
+          setApoliceParaAlterar(null);
+          loadApolices();
+        }}
+        onCancel={() => {
+          setEtapa(apoliceParaAlterar ? "lista" : "planos");
+          setPlanoSelecionado(null);
+          setApoliceParaAlterar(null);
+        }}
+      />
+    );
+  }
+
+  // Exibe tela de seleção de planos
+  if (etapa === "planos") {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] text-white py-10 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
             <div>
-              <div className="text-lg font-bold">Apólice #12345</div>
-              <div className="text-gray-400">Veículo: Honda Civic - ABC1D23</div>
-              <div className="text-gray-400">Valor: R$ 1.200,00</div>
+              <h1 className="text-3xl font-bold mb-2">
+                {apoliceParaAlterar ? "Alterar Plano" : "Escolha seu Plano"}
+              </h1>
+              <p className="text-gray-400">
+                {apoliceParaAlterar 
+                  ? `Alterando seguro do veículo ${apoliceParaAlterar.veiculo?.marca} ${apoliceParaAlterar.veiculo?.modelo}`
+                  : "Selecione o plano ideal para proteger seu veículo"
+                }
+              </p>
             </div>
-            <div className="flex gap-2">
-              <button className="bg-[#e24f10] hover:bg-[#c23f0c] text-white px-4 py-2 rounded-full font-bold">Visualizar</button>
-              <button className="bg-white text-black px-4 py-2 rounded-full font-bold border border-[#e24f10] hover:bg-[#e24f10] hover:text-white transition-all">Editar</button>
-              <button className="bg-red-600 text-white px-4 py-2 rounded-full font-bold hover:bg-red-800 transition-all">Excluir</button>
-            </div>
+            <button
+              onClick={() => {
+                setEtapa("lista");
+                setApoliceParaAlterar(null);
+              }}
+              className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-full font-bold transition-all"
+            >
+              Cancelar
+            </button>
           </div>
-          {/* ...outros cards */}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <PlanoCard
+              titulo="Básico"
+              preco={1000}
+              descricao="Proteção essencial para o seu veículo"
+              beneficios={[
+                "Cobertura contra terceiros",
+                "Assistência 24h básica",
+                "Guincho até 200km",
+                "Carro reserva 7 dias",
+              ]}
+              isPlanoAtual={apoliceParaAlterar?.tipoSeguro === "BASICO"}
+              onClick={() => handleSelecionarPlano("BASICO", "Básico", 1000)}
+            />
+
+            <PlanoCard
+              titulo="Completo"
+              preco={2000}
+              descricao="Proteção total com benefícios extras"
+              beneficios={[
+                "Tudo do plano Básico",
+                "Cobertura contra roubo e furto",
+                "Cobertura de vidros",
+                "Guincho ilimitado",
+                "Carro reserva 15 dias",
+                "Cobertura de acessórios",
+              ]}
+              destaque
+              isPlanoAtual={apoliceParaAlterar?.tipoSeguro === "COMPLETO"}
+              onClick={() => handleSelecionarPlano("COMPLETO", "Completo", 2000)}
+            />
+
+            <PlanoCard
+              titulo="Premium"
+              preco={3500}
+              descricao="Máxima proteção e serviços VIP"
+              beneficios={[
+                "Tudo do plano Completo",
+                "Cobertura internacional",
+                "Carro reserva premium 30 dias",
+                "Motorista à disposição",
+                "Revisões incluídas",
+                "Sem franquia",
+                "Atendimento prioritário",
+              ]}
+              isPlanoAtual={apoliceParaAlterar?.tipoSeguro === "PREMIUM"}
+              onClick={() => handleSelecionarPlano("PREMIUM", "Premium", 3500)}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    );
+  }
+
+  // Exibe lista de apólices (tela padrão)
+  return (
+    <>
+      <div className="min-h-screen bg-[#0a0a0a] text-white py-10 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">Meus Seguros</h1>
+            <div className="flex gap-2">
+              <button
+                onClick={exportarCSV}
+                disabled={apolices.length === 0}
+                className="bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded-full font-bold flex items-center gap-2 transition-all disabled:opacity-50"
+              >
+                <Download className="w-5 h-5" /> CSV
+              </button>
+              <button
+                className="bg-[#e24f10] hover:bg-[#c23f0c] text-white px-6 py-2 rounded-full font-bold transition-all"
+                onClick={() => setEtapa("planos")}
+              >
+                Novo Seguro
+              </button>
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por apólice, placa, modelo ou tipo..."
+              className="w-full md:max-w-md px-4 py-2 rounded-lg bg-[#1a1a1a] border border-[#333] text-white placeholder-gray-500 focus:outline-none focus:border-[#e24f10] transition-colors"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading ? (
+              <div className="col-span-full flex items-center justify-center min-h-[50vh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#e24f10]"></div>
+              </div>
+            ) : apolices.length === 0 ? (
+              <div className="col-span-full text-center text-gray-400">Nenhuma apólice encontrada.</div>
+            ) : apolicesFiltradas.length === 0 ? (
+              <div className="col-span-full text-center text-gray-400">Nenhuma apólice encontrada para sua busca.</div>
+            ) : (
+              apolicesFiltradas.map((apolice) => (
+                <SeguroCard
+                  key={apolice.id}
+                  apolice={apolice}
+                  onAlterarPlano={handleAlterarPlano}
+                  onDelete={handleCancelarApolice}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Dialog de confirmação de cancelamento */}
+      <AlertDialog open={showDialogCancelar} onOpenChange={setShowDialogCancelar}>
+        <AlertDialogContent className="bg-[#1a1a1a] border-[#333]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white text-2xl">Cancelar Apólice?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400 text-base">
+              Você está prestes a cancelar a apólice{" "}
+              <span className="text-[#e24f10] font-bold">#{apoliceParaDeletar?.numeroApolice}</span>
+              {apoliceParaDeletar?.veiculo && (
+                <>
+                  {" "}do veículo{" "}
+                  <span className="text-white font-medium">
+                    {apoliceParaDeletar.veiculo.marca} {apoliceParaDeletar.veiculo.modelo}
+                  </span>
+                </>
+              )}
+              .
+              <br />
+              <br />
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-[#333] hover:bg-[#444] text-white border-0">
+              Voltar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmarCancelamento}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Sim, Cancelar Apólice
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

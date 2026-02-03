@@ -1,7 +1,7 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import { login as apiLogin, getClientes } from "../services/Service";
+import { login as apiLogin, getMe, preloadUserData } from "../services/Service";
 
 interface User {
   id: string;
@@ -15,24 +15,27 @@ interface AuthContextType {
   // register removido pois não há endpoint de cadastro na API
   logout: () => void;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Verifica se há token salvo e busca o usuário autenticado
     const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-    if (token && userId) {
-      getClientes()
+    if (token) {
+      getMe()
         .then((res) => {
-          const cliente = res.data.find((c: any) => String(c.id) === String(userId));
-          setUser(cliente || null);
+          setUser(res.data);
         })
-        .catch(() => setUser(null));
+        .catch(() => setUser(null))
+        .finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
     }
   }, []);
 
@@ -44,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const token = response.data.token;
       localStorage.setItem("token", token);
 
-      // Decodifica o JWT para pegar o email (sub)
+      // Decodifica o JWT para pegar o token
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const jsonPayload = decodeURIComponent(
@@ -55,15 +58,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           })
           .join('')
       );
+      // Token decodificado (apenas para debug se necessário)
       const payload = JSON.parse(jsonPayload);
-      const userEmail = payload.sub;
 
-      // Busca todos os clientes e filtra pelo email
-      const clientesRes = await getClientes();
-      const cliente = clientesRes.data.find((c: any) => c.email === userEmail);
+      // Busca o usuário autenticado via endpoint /me
+      const meRes = await getMe();
+      const cliente = meRes.data;
       if (cliente) {
         setUser(cliente);
         localStorage.setItem("userId", cliente.id);
+        // Preload dados em background (não aguarda)
+        preloadUserData();
         return true;
       } else {
         setUser(null);
@@ -89,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         isAuthenticated: !!user,
+        isLoading,
       }}
     >
       {children}
