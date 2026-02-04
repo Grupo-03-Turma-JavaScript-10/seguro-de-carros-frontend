@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { ShieldCheck, Target, Users, Award, Clock, HeadphonesIcon } from "lucide-react";
 import { ImageWithFallback } from "../App/components/figma/imageWithFallback";
+import { useNavigate } from "react-router-dom";
 
 export function Sobre() {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
@@ -225,8 +227,8 @@ export function Sobre() {
             Faça uma simulação gratuita e descubra o plano ideal para você.
           </p>
           <a 
-            href="/cadastro" 
-            className="inline-block bg-[#e24f10] hover:bg-[#c23f0c] text-white px-10 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+            onClick={() => navigate("/planos")}
+            className="inline-block bg-[#e24f10] hover:bg-[#c23f0c] text-white px-10 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105 cursor-pointer"
           >
             COMEÇAR AGORA
           </a>
