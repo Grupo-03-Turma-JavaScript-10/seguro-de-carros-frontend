@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { cpf as cpfValidator } from "cpf-cnpj-validator";
 import { register } from "../../services/Service";
 import { Car, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 
 export function Cadastro() {
   const [nome, setNome] = useState("");
@@ -55,6 +55,7 @@ export function Cadastro() {
 
     try {
       await register(nome, email, senha, cpf, telefone);
+      toast.success("Cadastro realizado com sucesso! 🎉");
       navigate("/");
     } catch (err) {
       setError("Erro ao cadastrar. Tente novamente.");
